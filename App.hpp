@@ -22,8 +22,6 @@
 #ifndef APP_H
 #define APP_H
 
-#define DEBUG
-
 #include <iostream>
 
 #include <istream>
@@ -75,6 +73,7 @@ namespace App {
 				const std::vector<T> & operator[] (int i) const { 
 					return dArray[i];
 				}
+
 				int resize(int rows, int cols) {
 /*		std::cout << "d " << rows << " " << cols << " " << dArray.size() << "\n";
 
@@ -327,4 +326,124 @@ namespace App {
 		}
 	}
 }
+
+char const* CivPicFilesNames[] = {
+"LOGO.PIC",
+"SP257.PIC",
+"SP299.PIC",
+"LOVE1.PIC",
+"LOVE2.PIC",
+//"MAP.PIC",
+"ARCH.PIC",
+"TER257.PIC",
+"WONDERS.PIC",
+"WONDERS2.PIC",
+"BACK0A.PIC",
+"BACK0M.PIC",
+"BACK1A.PIC",
+"BACK1M.PIC",
+"BACK2A.PIC",
+"BACK2M.PIC",
+"BACK3A.PIC",
+"BIRTH0.PIC",
+"BIRTH1.PIC",
+"BIRTH2.PIC",
+"BIRTH3.PIC",
+"BIRTH4.PIC",
+"BIRTH5.PIC",
+"BIRTH6.PIC",
+"BIRTH7.PIC",
+"BIRTH8.PIC",
+"CASTLE0.PIC",
+"CASTLE1.PIC",
+"CASTLE2.PIC",
+"CASTLE3.PIC",
+"CASTLE4.PIC",
+"CBACK.PIC",
+"CBACKS.PIC",
+"CBACKS1.PIC",
+"CBACKS2.PIC",
+"CBACKS3.PIC",
+//"CBRUSH0.PIC",
+//"CBRUSH1.PIC",
+//"CBRUSH2.PIC",
+//"CBRUSH3.PIC",
+//"CBRUSH4.PIC",
+//"CBRUSH5.PIC",
+"CITYPIX1.PIC",
+"CITYPIX2.PIC",
+"CITYPIX3.PIC",
+"CUSTOM.PIC",
+"DIFFS.PIC",
+"DISCOVR1.PIC",
+"DISCOVR2.PIC",
+"DOCKER.PIC",
+"GOVT0A.PIC",
+"GOVT0M.PIC",
+"GOVT1A.PIC",
+"GOVT1M.PIC",
+"GOVT2A.PIC",
+"GOVT2M.PIC",
+"GOVT3A.PIC",
+"HILL.PIC",
+"ICONPG1.PIC",
+"ICONPG2.PIC",
+"ICONPG3.PIC",
+"ICONPG4.PIC",
+"ICONPG5.PIC",
+"ICONPG6.PIC",
+"ICONPG7.PIC",
+"ICONPG8.PIC",
+"ICONPGA.PIC",
+"ICONPGB.PIC",
+"ICONPGC.PIC",
+"ICONPGD.PIC",
+"ICONPGE.PIC",
+"ICONPGT1.PIC",
+"ICONPGT2.PIC",
+"INVADER2.PIC",
+"INVADER3.PIC",
+"INVADERS.PIC",
+"KING00.PIC",
+"KING01.PIC",
+"KING02.PIC",
+"KING03.PIC",
+"KING04.PIC",
+"KING05.PIC",
+"KING06.PIC",
+"KING07.PIC",
+"KING08.PIC",
+"KING09.PIC",
+"KING10.PIC",
+"KING11.PIC",
+"KING12.PIC",
+"KING13.PIC",
+//"KINK00.PIC",
+//"KINK03.PIC",
+"NUKE1.PIC",
+//"PLANET1.PIC",
+"PLANET2.PIC",
+"POP.PIC",
+"RIOT.PIC",
+"RIOT2.PIC",
+"SAD.PIC",
+"SETTLERS.PIC",
+//"SLAG2.PIC",
+//"SLAM1.PIC",
+//"SLAM2.PIC",
+//"SPACEST.PIC",
+//"SPRITES.PIC",
+};
+
+template <typename T, int Size>
+T* begin(T (&array)[Size]) {
+    return array;
+}
+template <typename T, int Size>
+T* end(T (&array)[Size]) {
+    return array + Size;
+}
+
+std::vector<std::string> CivPicFiles(begin(CivPicFilesNames), end(CivPicFilesNames));
+
 #endif /* APP_H */

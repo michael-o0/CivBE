@@ -24,39 +24,7 @@
 
 #include "App.hpp"
 #include "PICImage.hpp"
-
-void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
-{
-    int bpp = surface->format->BytesPerPixel;
-    /* Here p is the address to the pixel we want to set */
-    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
-
-    switch(bpp) {
-    case 1:
-        *p = pixel;
-        break;
-
-    case 2:
-        *(Uint16 *)p = pixel;
-        break;
-
-    case 3:
-        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            p[0] = (pixel >> 16) & 0xff;
-            p[1] = (pixel >> 8) & 0xff;
-            p[2] = pixel & 0xff;
-        } else {
-            p[0] = pixel & 0xff;
-            p[1] = (pixel >> 8) & 0xff;
-            p[2] = (pixel >> 16) & 0xff;
-        }
-        break;
-
-    case 4:
-        *(Uint32 *)p = pixel;
-        break;
-    }
-}
+#include "GFX.hpp"
 
 int main(int argc, char* args[]) {
 
@@ -72,163 +40,116 @@ int main(int argc, char* args[]) {
 		}
 	}
 
-	PICImage* LOGO = new PICImage("/Volumes/contn/deviceuser/Downloads/Game/civ/SP257.PIC");
+	App::Options.scale_factor = SCALE_FACTOR_4;
 
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		return 1;
+		return -1;
 	}
 
 	atexit(SDL_Quit);
 
-	SDL_Window* window = nullptr;
+    //Set the scaling quality to nearest-pixel
+    if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0") < 0)
+    {
+        std::cout << "Failed to set Render Scale Quality" << "\n";
+    }
 
-	SDL_Surface* wnds = nullptr;
-	SDL_Surface* imgs = nullptr;
-
-	SDL_Renderer* renderer = nullptr;
-
-	SDL_CreateWindowAndRenderer(1280, 800, 0, &window, &renderer);
-
-	SDL_RenderClear(renderer);
-//	SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-/*
-	SDL_RenderDrawPoint(renderer, 400, 300); //Renders on middle of screen.
-
-	SDL_RenderPresent(renderer);
-*/
-
-//	wnds = SDL_GetWindowSurface(window);
-
-	App::Options.scale_factor = SCALE_FACTOR_4;
-
-	imgs = SDL_CreateRGBSurface(0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor, 8, 0, 0, 0, 0);
-	if (imgs == NULL) {
-		std::cerr << "s\n";
+	SDL_Window *window = nullptr;
+	window = SDL_CreateWindow("Civ", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 800, SDL_WINDOW_SHOWN);
+	if (window == NULL) {
 		return -1;
 	}
 
-	std::cout << std::hex << +imgs->format->BitsPerPixel << " " << +imgs->format->BytesPerPixel << std::dec << "\n";
-
-	if (SDL_MUSTLOCK(imgs)) {
-		SDL_LockSurface(imgs);
-	}
-		Uint8 *p;
-	    int bpp = imgs->format->BytesPerPixel;
-    	/* Here p is the address to the pixel we want to set */
-			for (int y = 0; y < 200; y++) {
-				for (int x = 0; x < 320; x++) {
-//					std::cout << std::hex << +LOGO->picture256[x][y] << " " << std::dec;
-					switch(App::Options.scale_factor) {
-						case SCALE_FACTOR_1:
-						    p = (Uint8 *)imgs->pixels + y * imgs->pitch + x * bpp;
-							*p = LOGO->picture256[x][y];
-							break;
-						case SCALE_FACTOR_2:
-						    p = (Uint8 *)imgs->pixels + y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-
-							p = (Uint8 *)imgs->pixels + y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor + (imgs->pitch) * bpp;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-//std::cout << "[" << y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor << "]";
-//std::cout << "[" << y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor + (imgs->pitch / 2) << "]" << " ";
-							break;
-						case SCALE_FACTOR_4:
-						    p = (Uint8 *)imgs->pixels + y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-
-							p = (Uint8 *)imgs->pixels + y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor + (imgs->pitch) * bpp;
-//std::cout << "[" << y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor << "]";
-//std::cout << "[" << y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor + (imgs->pitch) * bpp << "]" << " ";
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-
-						    p = (Uint8 *)imgs->pixels + y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor + (imgs->pitch * 2) * bpp;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-
-						    p = (Uint8 *)imgs->pixels + y * imgs->pitch * App::Options.scale_factor + x * bpp * App::Options.scale_factor + (imgs->pitch * 3) * bpp;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-							p++;
-							*p = LOGO->picture256[x][y];
-
-							break;
-					}
-				}
-			}
-		SDL_SetPaletteColors(imgs->format->palette, LOGO->palette256, 0, 256);
-	if (SDL_MUSTLOCK(imgs)) {
-		SDL_UnlockSurface(imgs);
+	SDL_Renderer *renderer = nullptr;
+	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+	if (renderer == NULL) {
+		return -1;
 	}
 
-	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, imgs);
-/*
-    SDL_Texture *Tile = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                        SDL_TEXTUREACCESS_STREAMING, 8, 8);
+	SDL_RenderClear(renderer);
 
-    // Initialize texture pixels to a red opaque RGBA value
-    unsigned char* bytes = nullptr;
-    int pitch = 0;
-    SDL_LockTexture(Tile, nullptr, reinterpret_cast<void**>(&bytes), &pitch);
-    unsigned char rgba[4] = { 255, 0, 0, 255 };
-    for(int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; ++x) {
-            memcpy(&bytes[(y * 8 + x)*sizeof(rgba)], rgba, sizeof(rgba));
-        }
-    }
-    SDL_UnlockTexture(Tile);
+	//Set to blue so it's noticeable if it doesn't do right.
+    SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
+
+	//Similarly, you must use SDL_TEXTUREACCESS_TARGET when you create the texture
+/*	SDL_Texture *backBuffer = NULL;
+	backBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 320, 200);
+	if (backBuffer == NULL) {
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		return -1;
+	}
+
+	//IMPORTANT Set the back buffer as the target
+	SDL_SetRenderTarget(renderer, backBuffer);
 */
+	std::string gd = "/Volumes/contn/deviceuser/Downloads/Game/civ/";
+
+	std::vector<PICImage> PICs(CivPicFiles.size());
+
+	for (int iter = 0; iter < PICs.size(); ++iter) {
+		PICImageIni(gd + CivPicFiles[iter], &PICs[iter]);
+	}
+/*	PICImageIni(gd + "LOGO.PIC", &PICs[0]);
+	PICImageIni(gd + "SP257.PIC", &PICs[1]);
+	PICImageIni(gd + "ADSCREEN.PIC", &PICs[2]);
+	PICImageIni(gd + "ARCH.PIC", &PICs[3]);
+*/
+
+	std::vector<PICImageTexture> PICImageTextures(PICs.size());
+
+	for (int iter = 0; iter < PICImageTextures.size(); ++iter) {
+		//if (PICs[iter].picimage_rawimage != nullptr) {
+			GFX::CreatePICImageTexture(&PICs[iter], &PICImageTextures[iter], renderer);
+		//}
+	}
+
 	SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
-	SDL_RenderCopy(renderer, texture, NULL, &destination);
+	SDL_RenderCopy(renderer, PICImageTextures[0].PICImageTexture_texture, NULL, &destination);
 	SDL_RenderPresent(renderer);
 
-	SDL_Event SDLTypeEvent;
-	int notdone = 1;
-	while(notdone) {
-		while(SDL_PollEvent(&SDLTypeEvent) != 0) {
-			switch(SDLTypeEvent.type) {
-				case
-					SDL_QUIT: notdone = 0;	break;
+	int tin = 0;
+
+	SDL_Event sdl_event;
+	bool done = false;
+	while(!done) {
+		while(SDL_PollEvent(&sdl_event) != 0) {
+			if (sdl_event.type == SDL_QUIT) {
+				done = true;
+			} else if (sdl_event.type == SDL_KEYDOWN) {
+				if (sdl_event.key.keysym.sym == SDLK_RIGHT) {
+					if (tin < PICImageTextures.size() - 1) {tin++;} else {tin = 0;};
+					SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
+					SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
+					SDL_RenderPresent(renderer);
+				}
+				if (sdl_event.key.keysym.sym == SDLK_LEFT) {
+					if (tin == 0) {tin = PICImageTextures.size() - 1;} else {tin--;}
+					SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
+					SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
+					SDL_RenderPresent(renderer);
+				}
 			}
 		}
 	}
 
+	for (int iter = 0; iter < PICs.size(); ++iter) {
+		if (PICs[iter].picimage_rawimage != nullptr) {
+			delete PICs[iter].picimage_rawimage;
+			PICs[iter].picimage_rawimage = nullptr;
+		}
+	}
 
-	SDL_DestroyTexture(texture);
-
-	SDL_FreeSurface(imgs);
-//	SDL_FreeSurface(wnds);
+	for (int iter = 0; iter < PICImageTextures.size(); ++iter) {
+		if (PICImageTextures[iter].PICImageTexture_texture != nullptr) {
+			SDL_DestroyTexture(PICImageTextures[iter].PICImageTexture_texture);
+			PICImageTextures[iter].PICImageTexture_texture = nullptr;
+		}
+	}
 
 	SDL_DestroyRenderer(renderer);
 
 	SDL_DestroyWindow(window);
-
-
-	delete LOGO;
-	LOGO = nullptr;
 
 	std::cout << " Bye.\n";
 
