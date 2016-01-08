@@ -56,6 +56,8 @@ enum ScaleFactorEnum {
 namespace App {
 	static struct {
 		std::string SMsCd;
+		const int base_width = 320;
+		const int base_height = 200;
 		enum ScaleFactorEnum scale_factor;
 	} Options;
 

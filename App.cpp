@@ -55,21 +55,27 @@ int main(int argc, char* args[]) {
     }
 
 	SDL_Window *window = nullptr;
-	window = SDL_CreateWindow("Civ", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 800, SDL_WINDOW_SHOWN);
-	if (window == NULL) {
+	window = SDL_CreateWindow("Civ",
+		SDL_WINDOWPOS_CENTERED,
+		SDL_WINDOWPOS_CENTERED,
+		App::Options.base_width * App::Options.scale_factor,
+		App::Options.base_height * App::Options.scale_factor,
+		SDL_WINDOW_SHOWN
+		);
+	if (window == nullptr) {
 		return -1;
 	}
 
 	SDL_Renderer *renderer = nullptr;
-	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-	if (renderer == NULL) {
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+	if (renderer == nullptr) {
 		return -1;
 	}
 
 	SDL_RenderClear(renderer);
 
-	//Set to blue so it's noticeable if it doesn't do right.
-    SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
+	//Set so it's noticeable if it doesn't come out right.
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
 	//Similarly, you must use SDL_TEXTUREACCESS_TARGET when you create the texture
 /*	SDL_Texture *backBuffer = NULL;
@@ -85,7 +91,7 @@ int main(int argc, char* args[]) {
 */
 	std::string gd = "/Volumes/contn/deviceuser/Downloads/Game/civ/";
 
-	std::vector<PICImage> PICs(CivPicFiles.size());
+	std::vector<PICImage> PICs(10);//CivPicFiles.size());
 
 	for (int iter = 0; iter < PICs.size(); ++iter) {
 		PICImageIni(gd + CivPicFiles[iter], &PICs[iter]);
@@ -98,6 +104,20 @@ int main(int argc, char* args[]) {
 			GFX::CreatePICImageTexture(&PICs[iter], &PICImageTextures[iter], renderer);
 		//}
 	}
+//figure ot ce
+/*
+Origin of your screen is top/left. 
+Middle of the screen:
+
+xcenter = w / 2; ycenter = h/2; 
+Left upper point:
+
+x = xcenter - (winrect.width()/2);
+y = ycenter - (winrect.height()/2);
+Now you only have to place your window there.
+*/
+//x ((App::Options.base_width * App::Options.scale_factor) / 2) - 
+//y ((App::Options.base_height * App::Options.scale_factor) / 2)
 
 	SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
 	SDL_RenderCopy(renderer, PICImageTextures[0].PICImageTexture_texture, NULL, &destination);
