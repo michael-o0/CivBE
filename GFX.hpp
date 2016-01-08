@@ -40,7 +40,7 @@ namespace GFX {
 		SDL_Surface* imgs = nullptr;
 
 		if ((__PICImage->picimage_256colour.rowsize() == 0) || (__PICImage->picimage_256colour.colsize() == 0)) {
-			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" << "e" << "\n";
+			std::cerr << "\tPICImageTexture\t\"" << __PICImage->picimage_fullfilepath << "\"\t" << "NULL" << "\n";
 			return -1;
 		}
 

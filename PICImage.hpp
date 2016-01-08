@@ -41,9 +41,12 @@ class PICImageIni {
 		PICImageIni(std::string __fullfilepath, struct PICImage *__PICImage) {
 			if (FileOpenAndLoad(__fullfilepath, __PICImage) == 0) {
 				ReadRawImage(__PICImage);
-				#ifdef DEBUG
-//				std::cout << "\tPICImage\t__PICImage
-				#endif
+//				#ifdef DEBUG
+//				std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath <<
+//					"\trl " << +__PICImage->picimage_rawlength <<
+//					"\t16 " << +__PICImage->picimage_16colour.rowsize() << " x " << +__PICImage->picimage_16colour.colsize() <<
+//					"\t256 " << +__PICImage->picimage_256colour.rowsize() << " x " << +__PICImage->picimage_256colour.colsize() << "\n";
+//				#endif
 			}
 		}
 

@@ -89,21 +89,18 @@ int main(int argc, char* args[]) {
 	//IMPORTANT Set the back buffer as the target
 	SDL_SetRenderTarget(renderer, backBuffer);
 */
-	std::string gd = "/Volumes/contn/deviceuser/Downloads/Game/civ/";
+	App::Options.SMsCd = "/Volumes/contn/deviceuser/Downloads/Game/civ/";
 
-	std::vector<PICImage> PICs(10);//CivPicFiles.size());
-
+	std::vector<PICImage> PICs(CivPicFiles.size());
 	for (int iter = 0; iter < PICs.size(); ++iter) {
-		PICImageIni(gd + CivPicFiles[iter], &PICs[iter]);
+		PICImageIni(App::Options.SMsCd + CivPicFiles[iter], &PICs[iter]);
 	}
 
 	std::vector<PICImageTexture> PICImageTextures(PICs.size());
-
 	for (int iter = 0; iter < PICImageTextures.size(); ++iter) {
-		//if (PICs[iter].picimage_rawimage != nullptr) {
-			GFX::CreatePICImageTexture(&PICs[iter], &PICImageTextures[iter], renderer);
-		//}
+		GFX::CreatePICImageTexture(&PICs[iter], &PICImageTextures[iter], renderer);
 	}
+
 //figure ot ce
 /*
 Origin of your screen is top/left. 
@@ -118,7 +115,7 @@ Now you only have to place your window there.
 */
 //x ((App::Options.base_width * App::Options.scale_factor) / 2) - 
 //y ((App::Options.base_height * App::Options.scale_factor) / 2)
-
+// base on rowsize.c
 	SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
 	SDL_RenderCopy(renderer, PICImageTextures[0].PICImageTexture_texture, NULL, &destination);
 	SDL_RenderPresent(renderer);
@@ -167,8 +164,10 @@ Now you only have to place your window there.
 	}
 
 	SDL_DestroyRenderer(renderer);
+	renderer = nullptr;
 
 	SDL_DestroyWindow(window);
+	window = nullptr;
 
 	std::cout << " Bye.\n";
 
