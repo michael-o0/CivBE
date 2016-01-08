@@ -116,7 +116,8 @@ Now you only have to place your window there.
 //x ((App::Options.base_width * App::Options.scale_factor) / 2) - 
 //y ((App::Options.base_height * App::Options.scale_factor) / 2)
 // base on rowsize.c
-	SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
+	SDL_RenderClear(renderer);
+	SDL_Rect destination = { 0, 0, PICs[0].picimage_256colour.rowsize() * App::Options.scale_factor, PICs[0].picimage_256colour.colsize() * App::Options.scale_factor };
 	SDL_RenderCopy(renderer, PICImageTextures[0].PICImageTexture_texture, NULL, &destination);
 	SDL_RenderPresent(renderer);
 
@@ -132,7 +133,8 @@ Now you only have to place your window there.
 				if (sdl_event.key.keysym.sym == SDLK_RIGHT) {
 					if (tin < PICImageTextures.size() - 1) {tin++;} else {tin = 0;};
 					if (PICImageTextures[tin].PICImageTexture_texture != nullptr) {
-						SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
+						SDL_RenderClear(renderer);
+						SDL_Rect destination = { 0, 0, PICs[tin].picimage_256colour.rowsize() * App::Options.scale_factor, PICs[tin].picimage_256colour.colsize() * App::Options.scale_factor };
 						SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
 						SDL_RenderPresent(renderer);
 					}
@@ -140,7 +142,8 @@ Now you only have to place your window there.
 				if (sdl_event.key.keysym.sym == SDLK_LEFT) {
 					if (tin == 0) {tin = PICImageTextures.size() - 1;} else {tin--;}
 					if (PICImageTextures[tin].PICImageTexture_texture != nullptr) {
-						SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
+						SDL_RenderClear(renderer);
+						SDL_Rect destination = { 0, 0, PICs[tin].picimage_256colour.rowsize() * App::Options.scale_factor, PICs[tin].picimage_256colour.colsize() * App::Options.scale_factor };
 						SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
 						SDL_RenderPresent(renderer);
 					}

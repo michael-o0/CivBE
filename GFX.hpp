@@ -31,8 +31,6 @@
 struct PICImageTexture {
 	std::string PICImageTexture_keyword;
 	SDL_Texture *PICImageTexture_texture = nullptr;
-	int PICImageTexture_width;
-	int PICImageTexture_height;
 };
 
 namespace GFX {
