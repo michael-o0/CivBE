@@ -90,11 +90,6 @@ int main(int argc, char* args[]) {
 	for (int iter = 0; iter < PICs.size(); ++iter) {
 		PICImageIni(gd + CivPicFiles[iter], &PICs[iter]);
 	}
-/*	PICImageIni(gd + "LOGO.PIC", &PICs[0]);
-	PICImageIni(gd + "SP257.PIC", &PICs[1]);
-	PICImageIni(gd + "ADSCREEN.PIC", &PICs[2]);
-	PICImageIni(gd + "ARCH.PIC", &PICs[3]);
-*/
 
 	std::vector<PICImageTexture> PICImageTextures(PICs.size());
 
@@ -119,15 +114,19 @@ int main(int argc, char* args[]) {
 			} else if (sdl_event.type == SDL_KEYDOWN) {
 				if (sdl_event.key.keysym.sym == SDLK_RIGHT) {
 					if (tin < PICImageTextures.size() - 1) {tin++;} else {tin = 0;};
-					SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
-					SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
-					SDL_RenderPresent(renderer);
+					if (PICImageTextures[tin].PICImageTexture_texture != nullptr) {
+						SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
+						SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
+						SDL_RenderPresent(renderer);
+					}
 				}
 				if (sdl_event.key.keysym.sym == SDLK_LEFT) {
 					if (tin == 0) {tin = PICImageTextures.size() - 1;} else {tin--;}
-					SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
-					SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
-					SDL_RenderPresent(renderer);
+					if (PICImageTextures[tin].PICImageTexture_texture != nullptr) {
+						SDL_Rect destination = { 0, 0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor };
+						SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
+						SDL_RenderPresent(renderer);
+					}
 				}
 			}
 		}

@@ -41,6 +41,9 @@ class PICImageIni {
 		PICImageIni(std::string __fullfilepath, struct PICImage *__PICImage) {
 			if (FileOpenAndLoad(__fullfilepath, __PICImage) == 0) {
 				ReadRawImage(__PICImage);
+				#ifdef DEBUG
+//				std::cout << "\tPICImage\t__PICImage
+				#endif
 			}
 		}
 
@@ -62,12 +65,12 @@ class PICImageIni {
 
 			__PICImage->picimage_rawimage = new char [ __PICImage->picimage_rawlength ];
 
-			#if defined (DEBUG) || defined(SINGLE_LINE_DEBUG)
-			std::cout << "\tPICImage:" << __fullfilepath << ":" << __PICImage->picimage_rawlength << "\n";
+			#ifdef SINGLE_LINE_DEBUG
+			std::cout << "\tPICImage\t\"" << __fullfilepath << "\"\t" << __PICImage->picimage_rawlength << " Bytes" << "\n";
 			#endif
 
 			if (!__inpf.read(__PICImage->picimage_rawimage, __PICImage->picimage_rawlength)) {
-				std::cout << "\tPICImage:" << __fullfilepath << " only " << __inpf.gcount() << " out of " << __PICImage->picimage_rawlength << " could be read. " << "\n";
+				std::cerr << "\tPICImage:" << __fullfilepath << " only " << __inpf.gcount() << " out of " << __PICImage->picimage_rawlength << " could be read. " << "\n";
 				delete[] __PICImage->picimage_rawimage;
 				__PICImage->picimage_rawimage = nullptr;
 				return -1;
@@ -91,26 +94,26 @@ class PICImageIni {
 					case 0x3045:
 						ReadE0ColourReplacementTable(__PICImage, __bindex);
 						#ifdef SINGLE_LINE_DEBUG
-						std::cout << "ReadE0ColourReplacementTable" << "\n";
+						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadE0ColourReplacementTable" << "\n";
 						#endif
 						break;
 					case 0x304d:
 						ReadM0ColourPalette(__PICImage, __bindex);
 						#ifdef SINGLE_LINE_DEBUG
-						std::cout << "ReadMColourPalette" << "\n";
+						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadM0ColourPalette" << "\n";
 						#endif
 						break;
 					case 0x3058:
 						ReadPictureX0(__PICImage, __bindex);
 						ConvertPictureX0(__PICImage);
 						#ifdef SINGLE_LINE_DEBUG
-						std::cout << "Read,ConvertPx0" << "\n";
+						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadPictureX0 and Convert" << "\n";
 						#endif
 						break;
 					case 0x3158:
 						ReadPictureX1(__PICImage, __bindex);
 						#ifdef SINGLE_LINE_DEBUG
-						std::cout << "ReadPictureX1" << "\n";
+						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadPictureX1" << "\n";
 						#endif
 						break;
 				}
@@ -135,10 +138,6 @@ class PICImageIni {
 			__bindex += 2;
 			uint8_t _firstIndex = (uint8_t)__PICImage->picimage_rawimage[ __bindex++ ];
 			uint8_t _lastIndex = (uint8_t)__PICImage->picimage_rawimage[ __bindex++ ];
-
-//std::cout << "c " << std::hex << +length << " " << +firstIndex << " " << +lastIndex << std::dec << "\n";
-
-			//std::cout << std::hex << (uint16_t)firstIndex << " " << (uint16_t)lastIndex << std::dec << std::endl;
 
 			/**
 			**	Per CivOne:
@@ -165,8 +164,7 @@ class PICImageIni {
 			**/
 				_colour_tbl[i][0] = (uint8_t)((__PICImage->picimage_rawimage[ __bindex ] & 0xf0) >> 4);
 				_colour_tbl[i][1] = (uint8_t)(__PICImage->picimage_rawimage[ __bindex ] & 0x0f);
-//				std::cout << i << " " << std::hex << +(uint8_t)raw[bindex] << " " << +(uint8_t)((raw[bindex] & 0xf0) >> 4) << " " << +(uint8_t)(raw[bindex] & 0x0f) << std::dec << "\n";
-//				std::cout << i << " " << std::hex << +(uint8_t)raw[bindex] << " " << +(uint8_t)_colour_tbl[i][0] << " " << +(uint8_t)_colour_tbl[i][1] << std::dec << "\n";
+
 				__bindex++;
 			}
 
@@ -230,8 +228,9 @@ class PICImageIni {
 			std::vector<int> _decoded = App::Custom::LZW::Decode(_indeces);
 			std::vector<int> _bytes = App::Custom::RLECodec::Decode(_decoded);
 
-			#ifdef DEBUG
-			std::cout << "\tPICImage:" << _indeces.size() << " Indeces\t" << _decoded.size() << " Decoded\t" << _bytes.size() << " Bytes" << "\n";
+			#ifdef SINGLE_LINE_DEBUG
+			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" <<
+				"Indeces " << _indeces.size() << "\tDecoded " << _decoded.size() << "\tBytes " << _bytes.size() << "\n";
 			#endif
 
 //			for (std::vector<int>::iterator it = indeces.begin() ; it != indeces.end(); ++it)
@@ -284,6 +283,11 @@ class PICImageIni {
 
 			__PICImage->picimage_256colour = _256colour_picimage;
 
+			#ifdef SINGLE_LINE_DEBUG
+			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" <<
+				+__PICImage->picimage_256colour.rowsize() << " x " << +__PICImage->picimage_256colour.colsize() << " 256colour" << "\n";
+			#endif
+
 			return 0;
 		}
 
@@ -316,6 +320,11 @@ class PICImageIni {
 			}
 
 			__PICImage->picimage_16colour = _16colour_picimage;
+
+			#ifdef SINGLE_LINE_DEBUG
+			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" <<
+				+__PICImage->picimage_16colour.rowsize() << " x " << +__PICImage->picimage_16colour.colsize() << " 16colour" << "\n";
+			#endif
 
 			return 0;
 		}

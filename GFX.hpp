@@ -39,7 +39,15 @@ namespace GFX {
 	int CreatePICImageTexture(struct PICImage *__PICImage, struct PICImageTexture *__PICImageTexture, SDL_Renderer *renderer) {
 		SDL_Surface* imgs = nullptr;
 
-		imgs = SDL_CreateRGBSurface(0, 320 * App::Options.scale_factor, 200 * App::Options.scale_factor, 8, 0, 0, 0, 0);
+		if ((__PICImage->picimage_256colour.rowsize() == 0) || (__PICImage->picimage_256colour.colsize() == 0)) {
+			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" << "e" << "\n";
+			return -1;
+		}
+
+		imgs = SDL_CreateRGBSurface(0,
+			__PICImage->picimage_256colour.rowsize() * App::Options.scale_factor,
+			__PICImage->picimage_256colour.colsize() * App::Options.scale_factor,
+			8, 0, 0, 0, 0);
 		if (imgs == NULL) {
 			std::cerr << "s\n";
 			return -1;
@@ -50,8 +58,8 @@ namespace GFX {
 		}
 			Uint8 *p;
 	    	int bpp = imgs->format->BytesPerPixel;
-				for (int y = 0; y < 200; y++) {
-					for (int x = 0; x < 320; x++) {
+				for (int y = 0; y < __PICImage->picimage_256colour.colsize(); y++) {
+					for (int x = 0; x < __PICImage->picimage_256colour.rowsize(); x++) {
 //						std::cout << std::hex << +__PICImage->picimage_256colour[x][y] << " " << std::dec;
 						switch(App::Options.scale_factor) {
 							case SCALE_FACTOR_1:
