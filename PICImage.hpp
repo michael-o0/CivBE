@@ -19,13 +19,17 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef PICIMAGE_H
-#define PICIMAGE_H
+#ifndef PICIMAGE_HPP
+#define PICIMAGE_HPP
 
-#include "App.hpp"
+#ifdef __WIN32__
+#include <SDL/SDL.h>
+#else
+#include <SDL2/SDL.h>
+#endif /* __WIN32__ */
 
 struct PICImage {
-	std::string picimage_keyword;
+	std::string picimage_id;
 	std::string picimage_fullfilepath;
 	char *picimage_rawimage = nullptr;
 	int picimage_rawlength;
@@ -41,7 +45,7 @@ class PICImageIni {
 		PICImageIni(std::string __fullfilepath, struct PICImage *__PICImage) {
 			if (FileOpenAndLoad(__fullfilepath, __PICImage) == 0) {
 				ReadRawImage(__PICImage);
-//				#ifdef DEBUG
+//				#ifdef DEBUG_PICIMAGE
 //				std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath <<
 //					"\trl " << +__PICImage->picimage_rawlength <<
 //					"\t16 " << +__PICImage->picimage_16colour.rowsize() << " x " << +__PICImage->picimage_16colour.colsize() <<
@@ -96,26 +100,26 @@ class PICImageIni {
 				switch (__codew) {
 					case 0x3045:
 						ReadE0ColourReplacementTable(__PICImage, __bindex);
-						#ifdef SINGLE_LINE_DEBUG
+						#ifdef DEBUG_PICIMAGE
 						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadE0ColourReplacementTable" << "\n";
 						#endif
 						break;
 					case 0x304d:
 						ReadM0ColourPalette(__PICImage, __bindex);
-						#ifdef SINGLE_LINE_DEBUG
+						#ifdef DEBUG_PICIMAGE
 						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadM0ColourPalette" << "\n";
 						#endif
 						break;
 					case 0x3058:
 						ReadPictureX0(__PICImage, __bindex);
 						ConvertPictureX0(__PICImage);
-						#ifdef SINGLE_LINE_DEBUG
+						#ifdef DEBUG_PICIMAGE
 						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadPictureX0 and Convert" << "\n";
 						#endif
 						break;
 					case 0x3158:
 						ReadPictureX1(__PICImage, __bindex);
-						#ifdef SINGLE_LINE_DEBUG
+						#ifdef DEBUG_PICIMAGE
 						std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\tReadPictureX1" << "\n";
 						#endif
 						break;
@@ -205,7 +209,7 @@ class PICImageIni {
 				**		// this never happens for any of the original Civilization resources
 				**/
 				if (i < _firstIndex || i > _lastIndex) {
-					__PICImage->picimage_palette256[i] = App::Custom::ColorFromArgb(0, 0, 0, 0);
+					__PICImage->picimage_palette256[i] = App::Custom::ColorFromArgb(255, 0, 0, 0);
 					continue;
 				}
 				uint8_t _red = (uint8_t)__PICImage->picimage_rawimage[ __bindex++ ];
@@ -218,7 +222,7 @@ class PICImageIni {
 			**	Per CivOne:
 			**		// always set colour 0 to transparent
 			**/
-			__PICImage->picimage_palette256[0] = App::Custom::ColorFromArgb(0, 0, 0, 0);
+			__PICImage->picimage_palette256[0] = App::Custom::ColorFromArgb(255, 0, 0, 0);
 
 			return 0;
 		}
@@ -231,7 +235,7 @@ class PICImageIni {
 			std::vector<int> _decoded = App::Custom::LZW::Decode(_indeces);
 			std::vector<int> _bytes = App::Custom::RLECodec::Decode(_decoded);
 
-			#ifdef SINGLE_LINE_DEBUG
+			#ifdef DEBUG_PICIMAGE
 			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" <<
 				"Indeces " << _indeces.size() << "\tDecoded " << _decoded.size() << "\tBytes " << _bytes.size() << "\n";
 			#endif
@@ -286,7 +290,7 @@ class PICImageIni {
 
 			__PICImage->picimage_256colour = _256colour_picimage;
 
-			#ifdef SINGLE_LINE_DEBUG
+			#ifdef DEBUG_PICIMAGE
 			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" <<
 				+__PICImage->picimage_256colour.rowsize() << " x " << +__PICImage->picimage_256colour.colsize() << " 256colour" << "\n";
 			#endif
@@ -324,7 +328,7 @@ class PICImageIni {
 
 			__PICImage->picimage_16colour = _16colour_picimage;
 
-			#ifdef SINGLE_LINE_DEBUG
+			#ifdef DEBUG_PICIMAGE
 			std::cout << "\tPICImage\t\"" << __PICImage->picimage_fullfilepath << "\"\t" <<
 				+__PICImage->picimage_16colour.rowsize() << " x " << +__PICImage->picimage_16colour.colsize() << " 16colour" << "\n";
 			#endif
@@ -349,11 +353,11 @@ class PICImageIni {
 			for (int y = 0; y < _hght; y++) {
 				for (int x = 0; x < _wdth; x++) {
 					_col256 = __PICImage->picimage_256colour[x][y];
-					__PICImage->picimage_16colour[x][y] = __PICImage->picimage_colourReplacementTable [ _col256 ] [ (y * x) % 2 ];
+					__PICImage->picimage_16colour[x][y] = __PICImage->picimage_colourReplacementTable [ _col256 ] [ (y + x) % 2 ];
 				}
 			}
 			return 0;
 		}
 };
 
-#endif /* PICIMAGE_H */
+#endif /* !PICIMAGE_HPP */

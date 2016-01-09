@@ -19,12 +19,27 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include <iostream>
+#include <istream>
+#include <ostream>
 #include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 
-#include "App.hpp"
+#ifdef _MSC_VER
+#define PATH_MAX _MAX_PATH
+#endif /* _MSC_VER */
+
+#ifdef __WIN32__
+#include <SDL/SDL.h>
+#else
+#include <SDL2/SDL.h>
+#endif /* __WIN32__ */
+
+#include "Custom.hpp"
 #include "PICImage.hpp"
 #include "GFX.hpp"
+#include "App.hpp"
 
 int main(int argc, char* args[]) {
 
@@ -33,49 +48,102 @@ int main(int argc, char* args[]) {
 	int a = 1;
 
 	while (argc > 1) {
-		if (!strcmp(args[a], "Continue")) {
+		if (!strcmp(args[a], "s")) {
 		++a;
 		--argc;
 		continue;
 		}
 	}
 
-	App::Options.scale_factor = SCALE_FACTOR_4;
-
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+		std::cout << "VIDEONoGO." << std::endl << SDL_GetError() << std::endl;
 		return -1;
 	}
 
 	atexit(SDL_Quit);
 
-    //Set the scaling quality to nearest-pixel
-    if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0") < 0)
-    {
-        std::cout << "Failed to set Render Scale Quality" << "\n";
-    }
+//	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "C", "H", NULL);
 
-	SDL_Window *window = nullptr;
-	window = SDL_CreateWindow("Civ",
+//	#ifdef DEBUG_SDL
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_WARN);
+//	#endif
+
+	SDL_DisplayMode currentWindow;
+
+//	int numVideoDisplays = SDL_GetNumVideoDisplays();
+
+	if (SDL_GetCurrentDisplayMode(0, &currentWindow) == 0) {
+		int _hor_scale_factor;
+		int _ver_scale_factor;
+
+		_hor_scale_factor = ((currentWindow.w / GFX::base_width) / 2) * 2;
+		std::cout << _hor_scale_factor << std::endl;
+
+		_ver_scale_factor = ((currentWindow.h / GFX::base_height) / 2) * 2;
+		std::cout << _ver_scale_factor << std::endl;
+
+		if (_ver_scale_factor < _hor_scale_factor) {
+			GFX::scale_factor = _ver_scale_factor;
+		} else if (_ver_scale_factor > _hor_scale_factor) {
+			GFX::scale_factor = _hor_scale_factor;
+		} else {
+			GFX::scale_factor = _hor_scale_factor;
+		}
+	} else {
+		SDL_LogMessage(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_WARN, "Could not get CurrentDisplayMode, Going with a GFX scale factor of 2");
+		GFX::scale_factor = 2;
+	}
+
+	//Set the scaling quality to nearest-pixel
+	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
+	{
+		SDL_LogMessage(SDL_LOG_CATEGORY_RENDER, SDL_LOG_PRIORITY_WARN, "Could not Set Render Scale Quality");
+	}
+
+	SDL_Window *window_AppWindow = nullptr;
+	window_AppWindow = SDL_CreateWindow("Civ",
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
-		App::Options.base_width * App::Options.scale_factor,
-		App::Options.base_height * App::Options.scale_factor,
+		GFX::base_width * GFX::scale_factor,
+		GFX::base_height * GFX::scale_factor,
 		SDL_WINDOW_SHOWN
 		);
-	if (window == nullptr) {
+	if (window_AppWindow == nullptr) {
+		SDL_LogMessage(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_CRITICAL, "Could not Create AppWindow");
 		return -1;
 	}
 
-	SDL_Renderer *renderer = nullptr;
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-	if (renderer == nullptr) {
+	SDL_Renderer *renderer_Renderer = nullptr;
+	renderer_Renderer = SDL_CreateRenderer(window_AppWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+	if (renderer_Renderer == nullptr) {
+		SDL_LogMessage(SDL_LOG_CATEGORY_RENDER, SDL_LOG_PRIORITY_CRITICAL, "Could not Create Rederer");
+		return -1;
+	}
+/*
+	SDL_Window *window_TextureRenderWindow = nullptr;
+	window_TextureRenderWindow = SDL_CreateWindow("TextureRenderWindow",
+		SDL_WINDOWPOS_CENTERED,
+		SDL_WINDOWPOS_CENTERED,
+		App::Video.window_base_width,// * App::Video.window_scale_factor,
+		App::Video.window_base_height,// * App::Video.window_scale_factor,
+		SDL_WINDOW_HIDDEN
+		);
+	if (window_TextureRenderWindow == nullptr) {
+		SDL_LogMessage(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_CRITICAL, "Could not Create TextureRenderWindow");
 		return -1;
 	}
 
-	SDL_RenderClear(renderer);
+	SDL_Renderer *renderer_TextureRenderer = nullptr;
+	renderer_TextureRenderer = SDL_CreateRenderer(window_TextureRenderWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+	if (renderer_TextureRenderer == nullptr) {
+		SDL_LogMessage(SDL_LOG_CATEGORY_RENDER, SDL_LOG_PRIORITY_CRITICAL, "Could not Create TextureRenderer");
+		return -1;
+	}
+*/
+	SDL_RenderClear(renderer_Renderer);
 
 	//Set so it's noticeable if it doesn't come out right.
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_SetRenderDrawColor(renderer_Renderer, 0, 0, 0, 0);
 
 	//Similarly, you must use SDL_TEXTUREACCESS_TARGET when you create the texture
 /*	SDL_Texture *backBuffer = NULL;
@@ -91,63 +159,42 @@ int main(int argc, char* args[]) {
 */
 	App::Options.SMsCd = "/Volumes/contn/deviceuser/Downloads/Game/civ/";
 
-	std::vector<PICImage> PICs(CivPicFiles.size());
+	std::vector<PICImage> PICs(10);//CivPicFiles.size());
+	std::vector<PICImageTexture> PICImageTextures(PICs.size());
+
 	for (int iter = 0; iter < PICs.size(); ++iter) {
 		PICImageIni(App::Options.SMsCd + CivPicFiles[iter], &PICs[iter]);
 	}
 
-	std::vector<PICImageTexture> PICImageTextures(PICs.size());
 	for (int iter = 0; iter < PICImageTextures.size(); ++iter) {
-		GFX::CreatePICImageTexture(&PICs[iter], &PICImageTextures[iter], renderer);
+		GFX::Create256ColourPICImageTexture(&PICs[iter], &PICImageTextures[iter], renderer_Renderer);
 	}
 
-//figure ot ce
-/*
-Origin of your screen is top/left. 
-Middle of the screen:
+	int ti = 0;
 
-xcenter = w / 2; ycenter = h/2; 
-Left upper point:
-
-x = xcenter - (winrect.width()/2);
-y = ycenter - (winrect.height()/2);
-Now you only have to place your window there.
-*/
-//x ((App::Options.base_width * App::Options.scale_factor) / 2) - 
-//y ((App::Options.base_height * App::Options.scale_factor) / 2)
-// base on rowsize.c
-	SDL_RenderClear(renderer);
-	SDL_Rect destination = { 0, 0, PICs[0].picimage_256colour.rowsize() * App::Options.scale_factor, PICs[0].picimage_256colour.colsize() * App::Options.scale_factor };
-	SDL_RenderCopy(renderer, PICImageTextures[0].PICImageTexture_texture, NULL, &destination);
-	SDL_RenderPresent(renderer);
-
-	int tin = 0;
+	GFX::RenderPICImageTexture(PICs, PICImageTextures, ti, renderer_Renderer);
 
 	SDL_Event sdl_event;
-	bool done = false;
-	while(!done) {
+	bool quit = false;
+	while(!quit) {
 		while(SDL_PollEvent(&sdl_event) != 0) {
-			if (sdl_event.type == SDL_QUIT) {
-				done = true;
-			} else if (sdl_event.type == SDL_KEYDOWN) {
-				if (sdl_event.key.keysym.sym == SDLK_RIGHT) {
-					if (tin < PICImageTextures.size() - 1) {tin++;} else {tin = 0;};
-					if (PICImageTextures[tin].PICImageTexture_texture != nullptr) {
-						SDL_RenderClear(renderer);
-						SDL_Rect destination = { 0, 0, PICs[tin].picimage_256colour.rowsize() * App::Options.scale_factor, PICs[tin].picimage_256colour.colsize() * App::Options.scale_factor };
-						SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
-						SDL_RenderPresent(renderer);
+			switch (sdl_event.type) {
+				case SDL_QUIT:
+					quit = true;
+					break;
+				case SDL_KEYDOWN:
+					switch (sdl_event.key.keysym.sym) {
+						case SDLK_RIGHT:
+							if (ti < PICImageTextures.size() - 1) {ti++;} else {ti = 0;};
+							break;
+						case SDLK_LEFT:
+							if (ti == 0) {ti = PICImageTextures.size() - 1;} else {ti--;}
+							break;
 					}
-				}
-				if (sdl_event.key.keysym.sym == SDLK_LEFT) {
-					if (tin == 0) {tin = PICImageTextures.size() - 1;} else {tin--;}
-					if (PICImageTextures[tin].PICImageTexture_texture != nullptr) {
-						SDL_RenderClear(renderer);
-						SDL_Rect destination = { 0, 0, PICs[tin].picimage_256colour.rowsize() * App::Options.scale_factor, PICs[tin].picimage_256colour.colsize() * App::Options.scale_factor };
-						SDL_RenderCopy(renderer, PICImageTextures[tin].PICImageTexture_texture, NULL, &destination);
-						SDL_RenderPresent(renderer);
+					if (PICImageTextures[ti].PICImageTexture_datap != nullptr) {
+							GFX::RenderPICImageTexture(PICs, PICImageTextures, ti, renderer_Renderer);
 					}
-				}
+					break;
 			}
 		}
 	}
@@ -160,17 +207,24 @@ Now you only have to place your window there.
 	}
 
 	for (int iter = 0; iter < PICImageTextures.size(); ++iter) {
-		if (PICImageTextures[iter].PICImageTexture_texture != nullptr) {
-			SDL_DestroyTexture(PICImageTextures[iter].PICImageTexture_texture);
-			PICImageTextures[iter].PICImageTexture_texture = nullptr;
+		if (PICImageTextures[iter].PICImageTexture_datap != nullptr) {
+			SDL_DestroyTexture(PICImageTextures[iter].PICImageTexture_datap);
+			PICImageTextures[iter].PICImageTexture_datap = nullptr;
 		}
 	}
 
-	SDL_DestroyRenderer(renderer);
-	renderer = nullptr;
+//	SDL_DestroyRenderer(renderer_TextureRenderer);
+//	renderer_TextureRenderer = nullptr;
 
-	SDL_DestroyWindow(window);
-	window = nullptr;
+//	SDL_DestroyWindow(window_TextureRenderWindow);
+//	window_TextureRenderWindow = nullptr;
+
+
+	SDL_DestroyRenderer(renderer_Renderer);
+	renderer_Renderer = nullptr;
+
+	SDL_DestroyWindow(window_AppWindow);
+	window_AppWindow = nullptr;
 
 	std::cout << " Bye.\n";
 
